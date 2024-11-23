@@ -1,3 +1,6 @@
+image_path = cv2.imread('/content/eggt2.jpg')
+height, width, _ = image.shape
+
 import cv2
 import matplotlib.pyplot as plt
 
