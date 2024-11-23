@@ -1,1 +1,50 @@
+import cv2
+import matplotlib.pyplot as plt
 
+def dsp(image_path):
+    # Load image
+
+    # Partitions
+    height, width, _ = image.shape
+    top_left = image[:height//2, :width//2]
+    top_right = image[:height//2, width//2:]
+    bottom_left = image[height//2:, :width//2]
+    bottom_right = image[height//2:, width//2:]
+
+    partitions = {
+        "Top Left": top_left,
+        "Top Right": top_right,
+        "Bottom Left": bottom_left,
+        "Bottom Right": bottom_right
+    }
+
+    # DSP and plotting for each partition
+    fig, axes = plt.subplots(2, 2, figsize=(10, 10))
+    for (label, partition), ax in zip(partitions.items(), axes.flatten()):
+        bri_factor = 1.7
+        bri_image = cv2.convertScaleAbs(partition, alpha=bri_factor, beta=0)
+        gray = cv2.cvtColor(bri_image, cv2.COLOR_BGR2GRAY)
+        blur = cv2.GaussianBlur(gray, (11, 11), 0)
+        _, bin = cv2.threshold(blur, 160, 255, cv2.THRESH_BINARY)
+        dil = cv2.dilate(bin, (2, 2), iterations=10)
+        ero = cv2.erode(dil, (2, 2), iterations=1)
+        can = cv2.Canny(ero, 30, 150, 2)
+        con, _ = cv2.findContours(ero, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        bbox = partition.copy()
+
+        if con:  # Check if contours are detected
+          largest_contour = max(con, key=cv2.contourArea)
+          contour_area = cv2.contourArea(largest_contour)
+          if contour_area > 1000:
+            x, y, w, h = cv2.boundingRect(largest_contour)
+            cv2.rectangle(bbox, (x, y), (x + w, y + h), (0, 0, 255), 5)
+
+        # Plot Bounding Box on Partition
+        ax.imshow(cv2.cvtColor(bbox, cv2.COLOR_BGR2RGB))
+        ax.set_title(label)
+        ax.axis('off')
+
+    plt.tight_layout()
+    plt.show()
+dsp(image_path)
