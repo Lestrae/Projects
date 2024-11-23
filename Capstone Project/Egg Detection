@@ -1,6 +1,3 @@
-image_path = cv2.imread('/content/eggt2.jpg')
-height, width, _ = image.shape
-
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -8,6 +5,9 @@ import math
 from skimage import measure
 import csv
 import os
+
+image_path = cv2.imread('/content/eggt2.jpg')
+height, width, _ = image.shape
 
 def dsp(image_path):
     # Load image
