@@ -1,1 +1,32 @@
+!git clone https://github.com/freedomwebtech/rpi-bookworm-yolov8
 
+import os
+HOME = os.getcwd()
+print(HOME)
+
+# Pip install method (recommended)
+!pip install ultralytics==8.0.20
+from IPython import display
+display.clear_output()
+
+import ultralytics
+ultralytics.checks()
+
+from ultralytics import YOLO
+from IPython.display import display, Image
+
+from google.colab import drive
+drive.mount('/content/gdrive')
+!ln -s /content/gdrive/My\ Drive/ /mydrive
+!ls /mydrive
+
+!mkdir {HOME}/datasets
+%cd {HOME}/datasets
+
+!unzip /content/gdrive/MyDrive/EDvoc6.zip
+
+%cd {HOME}
+!yolo task=detect mode=train model=/content/best.pt data=/content/datasets/data.yaml epochs=200 imgsz=600 plots=True
+
+%cd {HOME}
+!yolo task=detect mode=predict model=/content/best.pt conf=0.50 source=/content/eggt3.jpg save=True
