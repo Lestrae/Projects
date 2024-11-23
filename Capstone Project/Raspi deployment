@@ -1,0 +1,141 @@
+# Import necessary libraries
+from picamera2 import Picamera2
+import RPi.GPIO as GPIO
+import drivers
+import time
+import os
+import cv2
+import numpy as np
+from joblib import load
+
+# Load the saved SVM model and scaler
+model_path = '/content/svm_model.joblib'  # Replace with the actual path to your joblib model file
+svm_model = load(model_path)
+scaler_path = '/content/scaler.joblib'  # Replace with the actual path to your joblib scaler file
+scaler = load(scaler_path)
+
+# Set GPIO mode
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+
+# Camera setup
+picam2 = Picamera2()
+
+# GPIO button pins
+start_button = 16
+shutdown_button = 21
+relay_pin1 = 24  # Light
+relay_pin2 = 25  # LCD
+
+# GPIO setup for buttons
+GPIO.setup(start_button, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(shutdown_button, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(relay_pin1, GPIO.OUT)
+GPIO.setup(relay_pin2, GPIO.OUT)
+
+# Image path
+image_path = '/home/celerity/dp2_esd/test/image.jpg'
+
+# Turn on LCD
+GPIO.output(relay_pin2, GPIO.HIGH)
+
+# Display setup
+display = drivers.Lcd()
+
+# Capture image
+def capture_image():
+    camera_config = picam2.create_still_configuration(main={"size": (3280, 2464)})
+    picam2.configure(camera_config)
+    display.lcd_display_string("  Capturing image  ", 2)
+    GPIO.output(relay_pin1, GPIO.HIGH)
+    picam2.start()
+    time.sleep(2)
+    picam2.capture_file("image.jpg")
+    picam2.stop()
+    GPIO.output(relay_pin1, GPIO.LOW)
+    display.lcd_clear()
+
+# Process image
+# Define pred1, pred2, pred3, pred4 outside the process_image function
+pred1 = None
+pred2 = None
+pred3 = None
+pred4 = None
+
+def process_image(image_path):
+    global pred1, pred2, pred3, pred4  # Declare variables as global to update their values
+
+    # Read the image
+    image = cv2.imread(image_path)
+    height, width, _ = image.shape
+
+    # Split the image into four equal partitions
+    top_left = image[:height//2, :width//2]
+    top_right = image[:height//2, width//2:]
+    bottom_left = image[height//2:, :width//2]
+    bottom_right = image[height//2:, width//2:]
+
+    # Label each partition
+    labels = ["Top Left", "Top Right", "Bottom Left", "Bottom Right"]
+
+    # Initialize counters
+    partition_counter = 0
+
+    predictions = []
+
+    for i, partition in enumerate([top_left, top_right, bottom_left, bottom_right]):
+        # Increment partition counter
+        partition_counter += 1
+
+        # Apply image processing operations
+        gray = cv2.cvtColor(partition, cv2.COLOR_BGR2GRAY)
+        blur = cv2.GaussianBlur(gray, (11, 11), 0)
+        _, bin = cv2.threshold(blur, 160, 255, cv2.THRESH_BINARY)
+        ero = cv2.erode(bin, (3, 3), iterations=3)
+        dil = cv2.dilate(ero, (3, 3), iterations=3)
+        edges = cv2.Canny(dil, 10, 170, 3)
+        dil2 = cv2.dilate(edges, (1, 1), iterations=2)
+
+        # Find contours and draw bounding boxes
+        contours, _ = cv2.findContours(dil2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        for contour in contours:
+            x, y, w, h = cv2.boundingRect(contour)
+            cv2.rectangle(partition, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+            Eccentricity = np.sqrt(1 - (h ** 2) / (w ** 2))
+            Sphericity = (np.pi * h ** 3) / (6 * np.pi * (w/2) ** 3)
+            Index = h / w
+
+            # Standardize the features
+            features = np.array([[Index, Sphericity, Eccentricity]])
+            standardized_features = scaler.transform(features)
+
+            # Make prediction using the loaded SVM model
+            predicted_sex = svm_model.predict(standardized_features)[0]
+            predictions.append(predicted_sex)
+
+    # Update values of pred1, pred2, pred3, pred4
+    pred1 = predictions[0]
+    pred2 = predictions[1]
+    pred3 = predictions[2]
+    pred4 = predictions[3]
+
+# Start button
+def execute_start_button():
+    # Clear LCD
+    display.lcd_clear()
+
+    # Capture image
+    capture_image()
+    process_image(image_path)
+
+    # Print results to LCD
+    display.lcd_display_string(f"Egg 1: {'M' if pred1 == 0 else 'F'}, Egg 2: {'M' if pred2 == 0 else 'F'}", 1)
+    display.lcd_display_string(f"Egg 3: {'M' if pred3 == 0 else 'F'}, Egg 4: {'M' if pred4 == 0 else 'F'}", 2)
+    display.lcd_display_string("      Restart     ", 4)
+    time.sleep(0.2)  # Add delay to display result
+    # display.lcd_display_string("Egg 1: M   Egg 2: F  ", 1)
+    # display.lcd_display_string("Egg 3: M   Egg 4: F  ", 2)
+    # display.lcd_display_string("      Restart     ", 4)
+    # time.sleep(0.2)  # Debounce time
