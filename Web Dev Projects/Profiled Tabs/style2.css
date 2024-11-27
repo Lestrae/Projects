@@ -1,0 +1,36 @@
+#work {
+  background-color: #0a66cf; /* Green background */
+  color: white;              /* White text */
+  border: none;              /* No border */
+  padding: 15px 32px;       /* Padding */
+  text-align: center;        /* Centered text */
+  text-decoration: none;     /* No underline */
+  display: inline-block;     /* Inline-block display */
+  font-size: 16px;           /* Font size */
+  margin: 4px 2px;          /* Margin */
+  cursor: pointer;           /* Pointer cursor on hover */
+  border-radius: 4px;       /* Rounded corners */
+  transition: background-color 0.3s; /* Smooth transition */
+}
+
+#game {
+  background-color: #af1212; /* Green background */
+  color: white;              /* White text */
+  border: none;              /* No border */
+  padding: 15px 32px;       /* Padding */
+  text-align: center;        /* Centered text */
+  text-decoration: none;     /* No underline */
+  display: inline-block;     /* Inline-block display */
+  font-size: 16px;           /* Font size */
+  margin: 4px 2px;          /* Margin */
+  cursor: pointer;           /* Pointer cursor on hover */
+  border-radius: 4px;       /* Rounded corners */
+  transition: background-color 0.3s; /* Smooth transition */
+}
+#work:hover {
+  background-color: #082e58; /* Darker green on hover */
+}
+
+#game:hover {
+  background-color: #700808; /* Darker green on hover */
+}

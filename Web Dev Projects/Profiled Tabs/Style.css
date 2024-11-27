@@ -1,0 +1,62 @@
+body {
+  color: rgb(16, 208, 233);
+  background-image: url('https://wallpaperaccess.com/full/6223415.png');
+  font-family: monospace;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-color: #0e233a;
+  transition: .5s ease;
+}
+
+#profile {
+  /* background-color: gray; */
+  border: none; /* Remove border */
+  padding: none; /* Padding */
+  cursor: pointer; /* Pointer cursor on hover */
+  position: relative; /* Positioning context for the pseudo-element */
+  overflow: hidden; /* Ensure no overflow */
+  background-blend-mode: lighten;
+}
+
+title {
+  font-size: 40px;
+  font-weight: bold;
+  text-shadow: 10px 10px 10px rgba(0, 0, 0, 0.5);
+}
+#work {
+  background-color: rgb(9, 41, 71); /* Default GIF */
+  background-size: cover; /* Cover the entire button */
+  background-position: center; /* Center the image */
+  color: rgb(24, 149, 165); /* Text color */
+  border: none; /* Remove border */
+  padding: 20px 20px; /* Padding */
+  font-size: 20px; /* Font size */
+  cursor: pointer; /* Pointer cursor on hover */
+  position: relative; /* Positioning context for the pseudo-element */
+  overflow: hidden; /* Ensure no overflow */
+}
+
+#work:hover {
+  background-color: rgb(10, 51, 114);
+}
+#game {
+  background-color: rgb(94, 18, 18); /* Default GIF */
+  background-size: cover; /* Cover the entire button */
+  background-position: center; /* Center the image */
+  color: rgb(24, 149, 165); /* Text color */
+  border: none; /* Remove border */
+  padding: 20px 20px; /* Padding */
+  font-size: 20px; /* Font size */
+  cursor: pointer; /* Pointer cursor on hover */
+  position: relative; /* Positioning context for the pseudo-element */
+  overflow: hidden; /* Ensure no overflow */
+}
+
+#game:hover {
+  background-color: rgb(131, 33, 33);
+}
+
